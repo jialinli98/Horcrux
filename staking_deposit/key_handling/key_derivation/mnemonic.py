@@ -20,7 +20,6 @@ from staking_deposit.utils.file_handling import (
     resource_path,
 )
 
-
 def _get_word_list(language: str, path: str) -> Sequence[str]:
     """
     Given the language and path to the wordlist, return the list of BIP39 words.
@@ -229,18 +228,18 @@ def _mnemonic_to_entropy(mnemonic, words_path):
 
 # recover the original mnemonic from all mnemonic shares.
 #TODO: return language in _mnemonic_to_entropy
-def recover_mnemonic(language, mnemonics, words_path):
-    entropies = []
+def recover_mnemonic(tuples_of_mnemonics, words_path):
+    tuples_of_entropies = []
     #TODO
     language = ""
-    for m in mnemonics:
-        lang, en = _mnemonic_to_entropy(m, words_path)
-        entropies.append(en)
+    for index, m in tuples_of_mnemonics:
+        language, en = _mnemonic_to_entropy(m, words_path)
+        tuples_of_entropies.append((index, en))
     first_half = []
     second_half = []
-    for e in entropies:
-        first_half.append(e[:16])
-        second_half.append(e[16:])
+    for i in range(len(tuples_of_entropies)):
+        first_half.append((tuples_of_entropies[i][0], tuples_of_entropies[i][1][:16]))
+        second_half.append((tuples_of_entropies[i][0], tuples_of_entropies[i][1][16:]))
     entropy_first_half = Shamir_reconstruct(first_half)
     entropy_second_half = Shamir_reconstruct(second_half)
     final_entropy = b''.join([entropy_first_half , entropy_second_half ])
