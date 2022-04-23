@@ -13,6 +13,7 @@ from staking_deposit.utils.constants import (
 from staking_deposit.utils.crypto import (
     SHA256,
     PBKDF2,
+    Shamir_split,
 )
 from staking_deposit.utils.file_handling import (
     resource_path,
@@ -144,6 +145,40 @@ def get_mnemonic(*, language: str, words_path: str, entropy: Optional[bytes]=Non
     """
     if entropy is None:
         entropy = randbits(256).to_bytes(32, 'big')
+    entropy_length = len(entropy) * 8
+    checksum_length = (entropy_length // 32)
+    checksum = _get_checksum(entropy)
+    entropy_bits = int.from_bytes(entropy, 'big') << checksum_length
+    entropy_bits += checksum
+    entropy_length += checksum_length
+    mnemonic = []
+    word_list = _get_word_list(language, words_path)
+    for i in range(entropy_length // 11 - 1, -1, -1):
+        index = (entropy_bits >> i * 11) & 2**11 - 1
+        word = _index_to_word(word_list, index)
+        mnemonic.append(word)
+    return ' '.join(mnemonic)
+
+#Added functions
+def get_mnemonics(*, language: str, words_path: str, entropy: Optional[bytes]=None) -> str:
+    """
+    Return a mnemonic string in a given `language` based on `entropy` via the calculated checksum.
+
+    Ref: https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki#generating-the-mnemonic
+    """
+    if entropy is None:
+        entropy = randbits(256).to_bytes(32, 'big')
+    entropy1 = entropy[:16]
+    entropy2 = entropy[16:]
+    shares1 = Shamir_split(3, 2, entropy1)
+    shares2 = Shamir_split(3, 2, entropy2)
+    mnemonics = []
+    for i in range(3):
+        share_combined = b''.join([shares1[i][1], shares2[i][1]])
+        mnemonics.append(_entropy_to_mnemonics(language, words_path, share_combined))
+    return mnemonics
+
+def _entropy_to_mnemonics(language: str, words_path: str, entropy: bytes):
     entropy_length = len(entropy) * 8
     checksum_length = (entropy_length // 32)
     checksum = _get_checksum(entropy)
