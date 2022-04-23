@@ -14,6 +14,7 @@
         - [Commands](#commands)
         - [`new-mnemonic` Arguments](#new-mnemonic-arguments)
         - [`existing-mnemonic` Arguments](#existing-mnemonic-arguments)
+        - [`new-shamir` Arguments](#new-shamir-arguments)
         - [Successful message](#successful-message)
     - [Option 2. Build `deposit-cli` with native Python](#option-2-build-deposit-cli-with-native-python)
       - [Step 0. Python version checking](#step-0-python-version-checking)
@@ -98,6 +99,12 @@ or run the following command to enter the interactive CLI and generate keys from
 ./deposit existing-mnemonic
 ```
 
+or run the following command to enter the interactive CLI and generate new keys using Shamir Secret Sharing:
+
+```sh
+./deposit new-shamir
+```
+
 ###### Commands
 
 The CLI offers different commands depending on what you want to do with the tool.
@@ -106,6 +113,7 @@ The CLI offers different commands depending on what you want to do with the tool
 | ------- | ----------- |
 | `new-mnemonic` | (Recommended) This command is used to generate keystores with a new mnemonic. |
 | `existing-mnemonic` | This command is used to re-generate or derive new keys from your existing mnemonic. Use this command, if (i) you have already generated keys with this CLI before, (ii) you want to reuse your mnemonic that you know is secure that you generated elsewhere (reusing your eth1 mnemonic .etc), or (iii) you lost your keystores and need to recover your keys. |
+| `new-shamir` | This command is used to generate keystores from a set of mnemonic shares. |
 
 ###### `new-mnemonic` Arguments
 
@@ -126,6 +134,15 @@ You can use `existing-mnemonic --help` to see all arguments. Note that if there 
 | -------- | -------- | -------- |
 | `--validator_start_index` | Non-negative integer | The index of the first validator's keys you wish to generate. If this is your first time generating keys with this mnemonic, use 0. If you have generated keys using this mnemonic before, use the next index from which you want to start generating keys from (eg, if you've generated 4 keys before (keys #0, #1, #2, #3), then enter 4 here.|
 | `--num_validators`  | Non-negative integer | The number of signing keys you want to generate. Note that the child key(s) are generated via the same master key. |
+| `--folder` | String. Pointing to `./validator_keys` by default | The folder path for the keystore(s) and deposit(s) |
+| `--chain` | String. `mainnet` by default | The chain setting for the signing domain. |
+
+###### `new-shamir` Arguments
+
+| Argument | Type | Description |
+| -------- | -------- | -------- |
+| `--num_validators`  | Non-negative integer | The number of signing keys you want to generate. Note that the child key(s) are generated via the same master key. |
+| `--mnemonic_language` | String. Options: `czech`, `chinese_traditional`, `chinese_simplified`, `english`, `spanish`, `italian`, `korean`. Default to `english` | The mnemonic language |
 | `--folder` | String. Pointing to `./validator_keys` by default | The folder path for the keystore(s) and deposit(s) |
 | `--chain` | String. `mainnet` by default | The chain setting for the signing domain. |
 
@@ -183,6 +200,12 @@ or
 ./deposit.sh existing-mnemonic
 ```
 
+or
+
+```sh
+./deposit.sh new-shamir
+```
+
 You can also run the tool with optional arguments:
 
 ```sh
@@ -201,6 +224,7 @@ See [here](#commands)
 
 See [here](#new-mnemonic-arguments) for `new-mnemonic` arguments
 See [here](#existing-mnemonic-arguments) for `existing-mnemonic` arguments
+See [here](#new-shamir-arguments) for `new-shamir` arguments
 
 ###### Successful message
 See [here](#successful-message)
