@@ -1,0 +1,29 @@
+{
+    "shamir-tests":[
+        {
+            "scheme": "2of3",
+            "master-secret": "b6a8391dd683461fcf4fc876d685f31f",
+            "mnemonics": [
+                "plastic recover academic acid clothes wavy physics average oven aunt arena warmth safari husky hospital exhaust paces fluff coastal pharmacy",
+                "plastic recover academic agency detect modify being pickup royal numb scandal amazing ocean favorite flexible omit frozen talent smell ocean",
+                "plastic recover academic always acrobat curious peanut exhaust that dominant orbit bucket idea disease hazard forward camera society firm rhyme"
+            ]
+        },
+        {
+            "scheme": "2of3",
+            "master-secret": "4bcb6f1ac67a487ef9164515a1d40e0e",
+            "mnemonics": [
+                "document lunch academic acid blind losing purchase system advance thumb aide teammate hearing infant realize duration safari eyebrow pharmacy crowd",
+                "document lunch academic agency clay ordinary dough sharp cards average ruler install picture piece picture percent lizard paid metric clay",
+                "document lunch academic always debut prospect pajamas upstairs discuss cover theater sled velvet shelter move burden material garden raisin float"
+            ]
+        },
+        {
+            "scheme": "1of1",
+            "master-secret": "01e6d80f593b970dcdcb62019edec113",
+            "mnemonics": [
+                "camera prospect academic academic detailed infant testify avoid episode humidity fact faint cards oral traveler smell ticket finger public shrimp"
+            ]
+        }
+    ]
+}

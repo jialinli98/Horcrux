@@ -1,8 +1,11 @@
 import click
 import sys
 
+sys.path.append("/home/mattyab/Documents/Horcrux")
+
 from staking_deposit.cli.existing_mnemonic import existing_mnemonic
 from staking_deposit.cli.new_mnemonic import new_mnemonic
+from staking_deposit.cli.generate_shamir import generate_shamir
 from staking_deposit.utils.click import (
     captive_prompt_callback,
     choice_prompt_func,
@@ -53,6 +56,7 @@ def cli(ctx: click.Context, language: str, non_interactive: bool) -> None:
 
 cli.add_command(existing_mnemonic)
 cli.add_command(new_mnemonic)
+cli.add_command(generate_shamir)
 
 
 if __name__ == '__main__':
