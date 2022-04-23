@@ -13,6 +13,10 @@ from Crypto.Cipher import (
     AES as _AES
 )
 
+from Crypto.Protocol.SecretSharing import (
+    Shamir as _Shamir
+)
+
 
 def SHA256(x: bytes) -> bytes:
     return _sha256.new(x).digest()
@@ -53,3 +57,10 @@ def AES_128_CTR(*, key: bytes, iv: bytes) -> Any:
     if len(key) != 16:
         raise ValueError(f"The key length should be 16. Got {len(key)}.")
     return _AES.new(key=key, mode=_AES.MODE_CTR, initial_value=iv, nonce=b'')
+
+def Shamir_split(n: int, m: int, key: bytes):
+    shares = _Shamir.split(m, n, key)
+    return shares
+
+def Shamir_reconstruct(l: list):
+    return _Shamir.combine(l)

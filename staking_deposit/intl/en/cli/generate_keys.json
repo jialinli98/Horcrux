@@ -8,6 +8,14 @@
             "help": "The number of new validator keys you want to generate (you can always generate more later)",
             "prompt": "Please choose how many new validators you wish to run"
         },
+        "shamir_shares_created": {
+            "help": "The total number of shares that you want to create, between 1 and 16",
+            "prompt": "Please choose how many shares you wish to create"
+        },
+        "shamir_shares_required": {
+            "help": "How many shares will be required to reconstruct the key, between 1 and ",
+            "prompt": "Please choose how many shares will be required to restore from backup"
+        },
         "folder": {
             "help": "The folder path for the keystore(s) and deposit(s). Pointing to `./validator_keys` by default."
         },
@@ -26,6 +34,13 @@
         }
     },
     "generate_keys": {
+        "msg_key_creation": "Creating your keys.",
+        "msg_creation_success": "\nSuccess!\nYour keys can be found at: ",
+        "msg_pause": "\n\nPress any key.",
+        "err_verify_keystores": "Failed to verify the keystores.",
+        "err_verify_deposit": "Failed to verify the deposit data JSON files."
+    },
+    "generate_keys_shamir": {
         "msg_key_creation": "Creating your keys.",
         "msg_creation_success": "\nSuccess!\nYour keys can be found at: ",
         "msg_pause": "\n\nPress any key.",
