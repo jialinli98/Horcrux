@@ -14,6 +14,7 @@ from staking_deposit.utils.crypto import (
     SHA256,
     PBKDF2,
     Shamir_split,
+    Shamir_reconstruct,
 )
 from staking_deposit.utils.file_handling import (
     resource_path,
@@ -126,7 +127,7 @@ def reconstruct_mnemonic(mnemonic: str, words_path: str) -> Optional[str]:
             if _get_checksum(entropy_bits) == checksum:
                 """
                 This check guarantees that only one language has a valid mnemonic.
-                It is needed to ensure abbrivated words aren't valid in multiple languages
+                It is needed to ensure abbreviated words aren't valid in multiple languages
                 """
                 assert reconstructed_mnemonic is None
                 reconstructed_mnemonic = ' '.join([_index_to_word(full_word_list, index) for index in word_indices])
@@ -192,3 +193,58 @@ def _entropy_to_mnemonics(language: str, words_path: str, entropy: bytes):
         word = _index_to_word(word_list, index)
         mnemonic.append(word)
     return ' '.join(mnemonic)
+
+def _mnemonic_to_entropy(mnemonic, words_path):
+    try:
+        languages = determine_mnemonic_language(mnemonic, words_path)
+    except ValueError:
+        return None
+    #reconstructed_mnemonic = None
+    for language in languages:
+        try:
+            abbrev_word_list = abbreviate_words(_get_word_list(language, words_path))
+            abbrev_mnemonic_list = abbreviate_words(mnemonic.lower().split(' '))
+            if len(abbrev_mnemonic_list) not in range(12, 25, 3):
+                return None
+            word_indices = [_word_to_index(abbrev_word_list, word) for word in abbrev_mnemonic_list]
+            mnemonic_int = _uint11_array_to_uint(word_indices)
+            checksum_length = len(abbrev_mnemonic_list) // 3
+            checksum = mnemonic_int & 2**checksum_length - 1
+            entropy = (mnemonic_int - checksum) >> checksum_length
+            entropy_bits = entropy.to_bytes(checksum_length * 4, 'big')
+            #full_word_list = _get_word_list(language, words_path)
+            if _get_checksum(entropy_bits) == checksum:
+                """
+                This check guarantees that only one language has a valid mnemonic.
+                It is needed to ensure abbreviated words aren't valid in multiple languages
+                """
+                #assert reconstructed_mnemonic is None
+                #reconstructed_mnemonic = ' '.join([_index_to_word(full_word_list, index) for index in word_indices])
+                return language, entropy_bits
+            else:
+                pass
+        except ValueError:
+            pass
+    return entropy_bits
+
+# recover the original mnemonic from all mnemonic shares.
+#TODO: return language in _mnemonic_to_entropy
+def recover_mnemonic(language, mnemonics, words_path):
+    entropies = []
+    #TODO
+    language = ""
+    for m in mnemonics:
+        lang, en = _mnemonic_to_entropy(m, words_path)
+        entropies.append(en)
+    first_half = []
+    second_half = []
+    for e in entropies:
+        first_half.append(e[:16])
+        second_half.append(e[16:])
+    entropy_first_half = Shamir_reconstruct(first_half)
+    entropy_second_half = Shamir_reconstruct(second_half)
+    final_entropy = b''.join([entropy_first_half , entropy_second_half ])
+    mnemonic = _entropy_to_mnemonics(language, words_path, final_entropy)
+    return mnemonic
+
+        

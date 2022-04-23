@@ -24,7 +24,7 @@ from staking_deposit.utils.intl import (
 )
 
 from .generate_keys import (
-    generate_keys,
+    generate_keys_shamir,
     generate_keys_arguments_decorator,
 )
 
@@ -32,26 +32,27 @@ languages = get_first_options(MNEMONIC_LANG_OPTIONS)
 
 
 @click.command(
-    help=load_text(['arg_generate_shamir', 'help'], func='generate_shamir'),
+    help=load_text(['arg_new_shamir', 'help'], func='new_shamir'),
 )
 @click.pass_context
 @jit_option(
     callback=captive_prompt_callback(
         lambda mnemonic_language: fuzzy_reverse_dict_lookup(mnemonic_language, MNEMONIC_LANG_OPTIONS),
-        choice_prompt_func(lambda: load_text(['arg_mnemonic_language', 'prompt'], func='generate_shamir'), languages),
+        choice_prompt_func(lambda: load_text(['arg_mnemonic_language', 'prompt'], func='new_shamir'), languages),
     ),
-    default=lambda: load_text(['arg_mnemonic_language', 'default'], func='generate_shamir'),
-    help=lambda: load_text(['arg_mnemonic_language', 'help'], func='generate_shamir'),
+    default=lambda: load_text(['arg_mnemonic_language', 'default'], func='new_shamir'),
+    help=lambda: load_text(['arg_mnemonic_language', 'help'], func='new_shamir'),
     param_decls='--mnemonic_language',
-    prompt=choice_prompt_func(lambda: load_text(['arg_mnemonic_language', 'prompt'], func='generate_shamir'), languages),
+    prompt=choice_prompt_func(lambda: load_text(['arg_mnemonic_language', 'prompt'], func='new_shamir'), languages),
 )
 @generate_keys_arguments_decorator
-def generate_shamir(ctx: click.Context, mnemonic_language: str, **kwargs: Any) -> None:
+def new_shamir(ctx: click.Context, mnemonic_language: str, **kwargs: Any) -> None:
     click.pause(load_text(['msg_shamir_mnemonic_intro']).format(numkeys=3, threshold=2))
     mnemonics = get_mnemonics(language=mnemonic_language, words_path=WORD_LISTS_PATH)
 
     test_mnemonic = ''
-    mnemonics_to_check = mnemonics[:]
+    mnemonics_to_check = []
+    #mnemonics_to_check = mnemonics[:]
 
     while len(mnemonics_to_check) != 0:
 
@@ -71,4 +72,4 @@ def generate_shamir(ctx: click.Context, mnemonic_language: str, **kwargs: Any) -
     # Do NOT use mnemonic_password.
     ctx.obj = {'mnemonics': mnemonics, 'mnemonic_password': ''}
     ctx.params['validator_start_index'] = 0
-    ctx.forward(generate_keys)
+    ctx.forward(generate_keys_shamir)

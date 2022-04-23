@@ -147,3 +147,37 @@ def generate_keys(ctx: click.Context, validator_start_index: int,
         raise ValidationError(load_text(['err_verify_deposit']))
     click.echo(load_text(['msg_creation_success']) + folder)
     click.pause(load_text(['msg_pause']))
+
+
+@click.command()
+@click.pass_context
+def generate_keys_shamir(ctx: click.Context, validator_start_index: int,
+                  num_validators: int, folder: str, chain: str, keystore_password: str,
+                  eth1_withdrawal_address: HexAddress, **kwargs: Any) -> None:
+    mnemonics = ctx.obj['mnemonics']
+    mnemonic_password = ctx.obj['mnemonic_password']
+    amounts = [MAX_DEPOSIT_AMOUNT] * num_validators
+    folder = os.path.join(folder, DEFAULT_VALIDATOR_KEYS_FOLDER_NAME)
+    chain_setting = get_chain_setting(chain)
+    if not os.path.exists(folder):
+        os.mkdir(folder)
+    click.clear()
+    click.echo(RHINO_0)
+    click.echo(load_text(['msg_key_creation']))
+    credentials = CredentialList.from_mnemonics(
+        mnemonics=mnemonics,
+        mnemonic_password=mnemonic_password,
+        num_keys=num_validators,
+        amounts=amounts,
+        chain_setting=chain_setting,
+        start_index=validator_start_index,
+        hex_eth1_withdrawal_address=eth1_withdrawal_address,
+    )
+    keystore_filefolders = credentials.export_keystores(password=keystore_password, folder=folder)
+    deposits_file = credentials.export_deposit_data_json(folder=folder)
+    if not credentials.verify_keystores(keystore_filefolders=keystore_filefolders, password=keystore_password):
+        raise ValidationError(load_text(['err_verify_keystores']))
+    if not verify_deposit_data_json(deposits_file, credentials.credentials):
+        raise ValidationError(load_text(['err_verify_deposit']))
+    click.echo(load_text(['msg_creation_success']) + folder)
+    click.pause(load_text(['msg_pause']))
