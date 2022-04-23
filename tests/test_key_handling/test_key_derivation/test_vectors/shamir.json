@@ -1,5 +1,5 @@
 {
-    "shamir-tests":[
+    "shamir_tests":[
         {
             "scheme": "2of3",
             "master-secret": "b6a8391dd683461fcf4fc876d685f31f",
