@@ -47,8 +47,13 @@ languages = get_first_options(MNEMONIC_LANG_OPTIONS)
 )
 @generate_keys_arguments_decorator
 def new_shamir(ctx: click.Context, mnemonic_language: str, **kwargs: Any) -> None:
-    click.pause(load_text(['msg_shamir_mnemonic_intro']).format(numkeys=3, threshold=2))
-    mnemonics = get_mnemonics(language=mnemonic_language, words_path=WORD_LISTS_PATH)
+    N = int(click.prompt("How many shares total would you like to have? (N) "))
+    T = int(click.prompt("What would you like the share threshold for reconstruction to be? (T) "))
+
+    click.pause(load_text(['msg_shamir_mnemonic_intro']
+                          ).format(numkeys=N, threshold=T))
+    mnemonics = get_mnemonics(
+        language=mnemonic_language, words_path=WORD_LISTS_PATH, N=N, T=T)
 
     test_mnemonic = ''
     mnemonics_to_check = mnemonics[:]
@@ -58,16 +63,20 @@ def new_shamir(ctx: click.Context, mnemonic_language: str, **kwargs: Any) -> Non
 
         while mnemonics_to_check[0] != reconstruct_mnemonic(test_mnemonic, WORD_LISTS_PATH):
             click.clear()
-            click.echo(load_text(['msg_mnemonic_presentation']).format(keynum=len(mnemonics)-len(mnemonics_to_check)+1, total=len(mnemonics)))
-            click.echo('\n\n%s\n\n' % mnemonics_to_check[0][1])
+
+
+            click.echo(load_text(['msg_mnemonic_presentation']).format(
+                keynum=len(mnemonics)-len(mnemonics_to_check)+1, total=len(mnemonics)))
+            click.echo('\n\n%s\n\n' % mnemonics_to_check[0])
+
             click.pause(load_text(['msg_press_any_key']))
 
             click.clear()
-            test_mnemonic = click.prompt(load_text(['msg_mnemonic_retype_prompt']).format(keynum=len(mnemonics)-len(mnemonics_to_check)+1, total=len(mnemonics)) + '\n\n')
-
+            test_mnemonic = click.prompt(load_text(['msg_mnemonic_retype_prompt']).format(
+                keynum=len(mnemonics)-len(mnemonics_to_check)+1, total=len(mnemonics)) + '\n\n')
 
         mnemonics_to_check.pop(0)
-        
+
     click.clear()
     # Do NOT use mnemonic_password.
     ctx.obj = {'mnemonics': mnemonics, 'mnemonic_password': ''}

@@ -160,7 +160,7 @@ def get_mnemonic(*, language: str, words_path: str, entropy: Optional[bytes]=Non
     return ' '.join(mnemonic)
 
 #Added functions
-def get_mnemonics(*, language: str, words_path: str, entropy: Optional[bytes]=None) -> str:
+def get_mnemonics(*, language: str, words_path: str, N: int, T: int, entropy: Optional[bytes]=None) -> str:
     """
     Return a mnemonic string in a given `language` based on `entropy` via the calculated checksum.
 
@@ -170,8 +170,8 @@ def get_mnemonics(*, language: str, words_path: str, entropy: Optional[bytes]=No
         entropy = randbits(256).to_bytes(32, 'big')
     entropy1 = entropy[:16]
     entropy2 = entropy[16:]
-    shares1 = Shamir_split(3, 2, entropy1)
-    shares2 = Shamir_split(3, 2, entropy2)
+    shares1 = Shamir_split(N, T, entropy1)
+    shares2 = Shamir_split(N, T, entropy2)
     mnemonics = []
     for i in range(3):
         share_combined = b''.join([shares1[i][1], shares2[i][1]])
