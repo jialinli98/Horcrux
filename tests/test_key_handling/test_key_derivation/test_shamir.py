@@ -2,6 +2,7 @@ import os
 import json
 from py_ecc.bls import G2ProofOfPossession as bls
 import pytest
+from secrets import randbits
 
 
 from staking_deposit.utils.constants import (
@@ -16,6 +17,10 @@ from staking_deposit.key_handling.key_derivation.mnemonic import (
     #added
     get_mnemonics,
 )
+from staking_deposit.utils.crypto import (
+    Shamir_reconstruct,
+    Shamir_split
+)
 
 
 test_vector_filefolder = os.path.join(os.getcwd(), 'tests', 'test_key_handling',
@@ -28,11 +33,16 @@ WORD_LISTS_PATH = os.path.join(os.getcwd(), 'staking_deposit', 'key_handling', '
 all_languages = MNEMONIC_LANG_OPTIONS.keys()
 
 
+def test_shamir_reconstruct():
+    masterbytes = randbits(256).to_bytes(32, 'big')
+
+    splitkeys = Shamir_split(masterbytes)
+
 @pytest.mark.parametrize(
     'test',
     test_vectors
 )
-def test_shamir_reconstruct(test):
+def test_shamir_mnemonic_reconstruct(test):
     schemeinfo = test['scheme'].split("of")
     
     #assert shamir_reconstruct()
@@ -42,4 +52,3 @@ def test_shamir_reconstruct(test):
 def test_shamir_generate():
     mnemonics = get_mnemonics(language="English", words_path=WORD_LISTS_PATH)
 
-    
