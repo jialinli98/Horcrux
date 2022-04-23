@@ -1,4 +1,4 @@
-# staking-deposit-cli
+# Horcrux x staking-deposit-cli
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -15,6 +15,7 @@
         - [Commands](#commands)
         - [`new-mnemonic` Arguments](#new-mnemonic-arguments)
         - [`existing-mnemonic` Arguments](#existing-mnemonic-arguments)
+        - [`new-shamir` Arguments](#new-shamir-arguments)
         - [Successful message](#successful-message)
     - [Option 2. Build `deposit-cli` with native Python](#option-2-build-deposit-cli-with-native-python)
       - [Step 0. Python version checking](#step-0-python-version-checking)
@@ -150,6 +151,11 @@ You can use `existing-mnemonic --help` to see all arguments. Note that if there 
 | `--folder` | String. Pointing to `./validator_keys` by default | The folder path for the keystore(s) and deposit(s) |
 | `--chain` | String. `mainnet` by default | The chain setting for the signing domain. |
 | `--eth1_withdrawal_address` | String. Eth1 address in hexadecimal encoded form | If this field is set and valid, the given Eth1 address will be used to create the withdrawal credentials. Otherwise, it will generate withdrawal credentials with the mnemonic-derived withdrawal public key in [EIP-2334 format](https://eips.ethereum.org/EIPS/eip-2334#eth2-specific-parameters). |
+
+###### `new-shamir` Arguments
+
+You can use this new command to generate shares (keys) the number of which are chosen by the user. These keys each individually are used to generate an entropy for creating seedphrases for themselves. The minimum number of seeds out of these that are required to reconstruct the original seedphrase to gain access to all of the shamir shares is decided by the user and has to be at least the rounded up value the number of shares divided by 2. This ensures that the the seedphrase is secure and retrievable only with a majority of the seedphrases. 
+Horcrux is there to make the addition of Shamir Secret Sharing Scheme to the staking-deposit-cli; a project for ETHAmsterdam 2022.
 
 ###### Successful message
 
