@@ -53,6 +53,7 @@ def new_shamir(ctx: click.Context, mnemonic_language: str, **kwargs: Any) -> Non
     test_mnemonic = ''
     mnemonics_to_check = []
     #mnemonics_to_check = mnemonics[:]
+    print(mnemonics)
 
     while len(mnemonics_to_check) != 0:
 

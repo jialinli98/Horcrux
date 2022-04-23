@@ -1,7 +1,7 @@
 import click
 import sys
 
-sys.path.append("/home/mattyab/Documents/Horcrux")
+sys.path.append("/Users/jli/Desktop/Horcrux")
 
 from staking_deposit.cli.existing_mnemonic import existing_mnemonic
 from staking_deposit.cli.new_mnemonic import new_mnemonic
