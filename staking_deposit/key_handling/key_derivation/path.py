@@ -1,9 +1,16 @@
 from typing import List
 
-from .mnemonic import get_seed
+from .mnemonic import (
+    get_seed,
+    recover_mnemonic
+)
 from .tree import (
     derive_master_SK,
     derive_child_SK,
+)
+from staking_deposit.utils.constants import (
+    MNEMONIC_LANG_OPTIONS,
+    WORD_LISTS_PATH,
 )
 
 
@@ -30,6 +37,18 @@ def mnemonic_and_path_to_key(*, mnemonic: str, path: str, password: str) -> int:
     compliant with BIP39 mnemonics that use passwords, but is not used by this CLI outside of tests.
     """
     seed = get_seed(mnemonic=mnemonic, password=password)
+    sk = derive_master_SK(seed)
+    for node in path_to_nodes(path):
+        sk = derive_child_SK(parent_SK=sk, index=node)
+    return sk
+
+def mnemonics_and_path_to_key(*, mnemonics: list, path: str, password: str) -> int:
+    """
+    Return the SK at position `path`, derived from `mnemonics`. The password is to be
+    compliant with BIP39 mnemonics that use passwords, but is not used by this CLI outside of tests.
+    """
+    original_mnemonic = recover_mnemonic(mnemonics, WORD_LISTS_PATH)
+    seed = get_seed(mnemonic=original_mnemonic, password=password)
     sk = derive_master_SK(seed)
     for node in path_to_nodes(path):
         sk = derive_child_SK(parent_SK=sk, index=node)

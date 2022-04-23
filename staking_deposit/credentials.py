@@ -11,7 +11,10 @@ from eth_utils import to_canonical_address
 from py_ecc.bls import G2ProofOfPossession as bls
 
 from staking_deposit.exceptions import ValidationError
-from staking_deposit.key_handling.key_derivation.path import mnemonic_and_path_to_key
+from staking_deposit.key_handling.key_derivation.path import (
+    mnemonic_and_path_to_key,
+    mnemonics_and_path_to_key
+)
 from staking_deposit.key_handling.keystore import (
     Keystore,
     ScryptKeystore,
@@ -45,6 +48,7 @@ class Credential:
     Once created, it is the only object that should be required to perform any processing for a validator.
     mnemonic is either a str (non-Shamir), or a List[str] (Shamir)
     """
+
     def __init__(self, *, mnemonic, mnemonic_password: str,
                  index: int, amount: int, chain_setting: BaseChainSetting,
                  hex_eth1_withdrawal_address: Optional[HexAddress]):
@@ -57,7 +61,6 @@ class Credential:
         withdrawal_key_path = f'm/{purpose}/{coin_type}/{account}/0'
         self.signing_key_path = f'{withdrawal_key_path}/0'
 
-
         # Ensure mnemonic is correctly typed
         if type(mnemonic) == str:
             self.withdrawal_sk = mnemonic_and_path_to_key(
@@ -65,16 +68,15 @@ class Credential:
             self.signing_sk = mnemonic_and_path_to_key(
                 mnemonic=mnemonic, path=self.signing_key_path, password=mnemonic_password)
         elif type(mnemonic) == list:
-            # This bit needs to change! When we have written the method for shamir -> key
-            self.withdrawal_sk = mnemonic_and_path_to_key(
-                mnemonic=mnemonic, path=withdrawal_key_path, password=mnemonic_password)
-            self.signing_sk = mnemonic_and_path_to_key(
-                mnemonic=mnemonic, path=self.signing_key_path, password=mnemonic_password)
+            self.withdrawal_sk = mnemonics_and_path_to_key(
+                mnemonics=mnemonic, path=withdrawal_key_path, password=mnemonic_password)
+            self.signing_sk = mnemonics_and_path_to_key(
+                mnemonics=mnemonic, path=self.signing_key_path, password=mnemonic_password)
         else:
             print(type(mnemonic))
-            raise TypeError('Mnemonic passed to Credential was incorrect type. Allowed types are str, List[str]')
+            raise TypeError(
+                'Mnemonic passed to Credential was incorrect type. Allowed types are str, List[str]')
 
-        
         self.amount = amount
         self.chain_setting = chain_setting
         self.hex_eth1_withdrawal_address = hex_eth1_withdrawal_address
@@ -107,7 +109,8 @@ class Credential:
         elif self.withdrawal_prefix == ETH1_ADDRESS_WITHDRAWAL_PREFIX:
             return WithdrawalType.ETH1_ADDRESS_WITHDRAWAL
         else:
-            raise ValueError(f"Invalid withdrawal_prefix {self.withdrawal_prefix.hex()}")
+            raise ValueError(
+                f"Invalid withdrawal_prefix {self.withdrawal_prefix.hex()}")
 
     @property
     def withdrawal_credentials(self) -> bytes:
@@ -128,7 +131,8 @@ class Credential:
     @property
     def deposit_message(self) -> DepositMessage:
         if not MIN_DEPOSIT_AMOUNT <= self.amount <= MAX_DEPOSIT_AMOUNT:
-            raise ValidationError(f"{self.amount / ETH2GWEI} ETH deposits are not within the bounds of this cli.")
+            raise ValidationError(
+                f"{self.amount / ETH2GWEI} ETH deposits are not within the bounds of this cli.")
         return DepositMessage(
             pubkey=self.signing_pk,
             withdrawal_credentials=self.withdrawal_credentials,
@@ -137,7 +141,8 @@ class Credential:
 
     @property
     def signed_deposit(self) -> DepositData:
-        domain = compute_deposit_domain(fork_version=self.chain_setting.GENESIS_FORK_VERSION)
+        domain = compute_deposit_domain(
+            fork_version=self.chain_setting.GENESIS_FORK_VERSION)
         signing_root = compute_signing_root(self.deposit_message, domain)
         signed_deposit = DepositData(
             **self.deposit_message.as_dict(),
@@ -153,9 +158,12 @@ class Credential:
         """
         signed_deposit_datum = self.signed_deposit
         datum_dict = signed_deposit_datum.as_dict()
-        datum_dict.update({'deposit_message_root': self.deposit_message.hash_tree_root})
-        datum_dict.update({'deposit_data_root': signed_deposit_datum.hash_tree_root})
-        datum_dict.update({'fork_version': self.chain_setting.GENESIS_FORK_VERSION})
+        datum_dict.update(
+            {'deposit_message_root': self.deposit_message.hash_tree_root})
+        datum_dict.update(
+            {'deposit_data_root': signed_deposit_datum.hash_tree_root})
+        datum_dict.update(
+            {'fork_version': self.chain_setting.GENESIS_FORK_VERSION})
         datum_dict.update({'network_name': self.chain_setting.NETWORK_NAME})
         datum_dict.update({'deposit_cli_version': DEPOSIT_CLI_VERSION})
         return datum_dict
@@ -166,7 +174,8 @@ class Credential:
 
     def save_signing_keystore(self, password: str, folder: str) -> str:
         keystore = self.signing_keystore(password)
-        filefolder = os.path.join(folder, 'keystore-%s-%i.json' % (keystore.path.replace('/', '_'), time.time()))
+        filefolder = os.path.join(
+            folder, 'keystore-%s-%i.json' % (keystore.path.replace('/', '_'), time.time()))
         keystore.save(filefolder)
         return filefolder
 
@@ -180,6 +189,7 @@ class CredentialList:
     """
     A collection of multiple Credentials, one for each validator.
     """
+
     def __init__(self, credentials: List[Credential]):
         self.credentials = credentials
 
@@ -201,20 +211,21 @@ class CredentialList:
         with click.progressbar(key_indices, label=load_text(['msg_key_creation']),
                                show_percent=False, show_pos=True) as indices:
             return cls([Credential(mnemonic=mnemonic, mnemonic_password=mnemonic_password,
-                                   index=index, amount=amounts[index - start_index], chain_setting=chain_setting,
+                                   index=index, amount=amounts[index -
+                                                               start_index], chain_setting=chain_setting,
                                    hex_eth1_withdrawal_address=hex_eth1_withdrawal_address)
                         for index in indices])
 
     @classmethod
     def from_mnemonics(cls,
-                      *,
-                      mnemonics: List[str],
-                      mnemonic_password: str,
-                      num_keys: int,
-                      amounts: List[int],
-                      chain_setting: BaseChainSetting,
-                      start_index: int,
-                      hex_eth1_withdrawal_address: Optional[HexAddress]) -> 'CredentialList':
+                       *,
+                       mnemonics: List[str],
+                       mnemonic_password: str,
+                       num_keys: int,
+                       amounts: List[int],
+                       chain_setting: BaseChainSetting,
+                       start_index: int,
+                       hex_eth1_withdrawal_address: Optional[HexAddress]) -> 'CredentialList':
         if len(amounts) != num_keys:
             raise ValueError(
                 f"The number of keys ({num_keys}) doesn't equal to the corresponding deposit amounts ({len(amounts)})."
@@ -223,7 +234,8 @@ class CredentialList:
         with click.progressbar(key_indices, label=load_text(['msg_key_creation']),
                                show_percent=False, show_pos=True) as indices:
             return cls([Credential(mnemonic=mnemonics, mnemonic_password=mnemonic_password,
-                                   index=index, amount=amounts[index - start_index], chain_setting=chain_setting,
+                                   index=index, amount=amounts[index -
+                                                               start_index], chain_setting=chain_setting,
                                    hex_eth1_withdrawal_address=hex_eth1_withdrawal_address)
                         for index in indices])
 

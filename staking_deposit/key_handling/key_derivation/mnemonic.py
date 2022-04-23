@@ -175,7 +175,7 @@ def get_mnemonics(*, language: str, words_path: str, entropy: Optional[bytes]=No
     mnemonics = []
     for i in range(3):
         share_combined = b''.join([shares1[i][1], shares2[i][1]])
-        mnemonics.append(_entropy_to_mnemonics(language, words_path, share_combined))
+        mnemonics.append((i,_entropy_to_mnemonics(language, words_path, share_combined)))
     return mnemonics
 
 def _entropy_to_mnemonics(language: str, words_path: str, entropy: bytes):

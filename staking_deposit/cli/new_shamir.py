@@ -51,8 +51,7 @@ def new_shamir(ctx: click.Context, mnemonic_language: str, **kwargs: Any) -> Non
     mnemonics = get_mnemonics(language=mnemonic_language, words_path=WORD_LISTS_PATH)
 
     test_mnemonic = ''
-    mnemonics_to_check = []
-    #mnemonics_to_check = mnemonics[:]
+    mnemonics_to_check = mnemonics[:]
     print(mnemonics)
 
     while len(mnemonics_to_check) != 0:
@@ -60,7 +59,7 @@ def new_shamir(ctx: click.Context, mnemonic_language: str, **kwargs: Any) -> Non
         while mnemonics_to_check[0] != reconstruct_mnemonic(test_mnemonic, WORD_LISTS_PATH):
             click.clear()
             click.echo(load_text(['msg_mnemonic_presentation']).format(keynum=len(mnemonics)-len(mnemonics_to_check)+1, total=len(mnemonics)))
-            click.echo('\n\n%s\n\n' % mnemonics_to_check[0])
+            click.echo('\n\n%s\n\n' % mnemonics_to_check[0][1])
             click.pause(load_text(['msg_press_any_key']))
 
             click.clear()
